@@ -34,21 +34,22 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
 public class PongServer {
 
-    private static ConcurrentHashMap<String, PrintWriter> names;
+    private static PrintWriter first, second;
 
     public static void main(String[] args) throws IOException {
 
         int portNumber = 3000;
-        names = new ConcurrentHashMap<>();
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             while (true) {
@@ -62,7 +63,7 @@ public class PongServer {
 
     public static class ChatServerThread extends Thread {
         private Socket socket = null;
-        private String name;
+        private boolean identity;
 
         public ChatServerThread(Socket socket) {
             super("PongServerThread");
@@ -83,42 +84,48 @@ public class PongServer {
                 Gson gson = new Gson();
                 out.println("Connected");
 
-                while (true) {
-                    out.println("Name");
-                    name = in.readLine();
-                    if (name == null) {
-                        return;
-                    }
-                    if (!names.containsKey(name)) {
-                        names.putIfAbsent(name, out);
-                        out.println("Gotten");
-                        break;
-                    } else {
-                    	out.println("Used");
-                    }
+                if (first == null){
+                	// This is the first user.
+                	identity = true;
+                	first = out;
+                }
+                else {
+                	// This is the second user.
+                	identity = false;
+                	second = out;
                 }
 
                 try{
+                	// If the second client has connected, then we start the game.
+                	if (!identity) {
+                		long t = Calendar.getInstance().getTimeInMillis();
+                		first.println("Start" + (t + 1000));
+                		second.println("Start" + (t + 1000));
+                	}
+                	
+                	// Continuously accept user data
                     while ((inputLine = in.readLine()) != null) {
                         if (inputLine.equals("Disconnect"))
                             break;
                     	// We parse the message
                         HashMap<String, String> pro = gson.fromJson(inputLine, mapType);
-                        SimpleDateFormat f = new SimpleDateFormat("HH:mm MM/dd");
-                        pro.put("Time", f.format(Calendar.getInstance().getTime()));
                         
-                        String t = pro.get("Target");
-                        
-                        // If the target is online, we send it to the target.
-                        PrintWriter writerToTarget = names.get(t);
-                        writerToTarget.println("SetTarget" + pro.get("From"));
-                        writerToTarget.println(gson.toJson(pro, HashMap.class));
+                        // If the first client sent us the data, we send the data to the second client.
+                        if (identity) {
+	                        second.println(gson.toJson(pro, HashMap.class));
+                        } else {
+	                        first.println(gson.toJson(pro, HashMap.class));
+                        }
                     }
                 } catch (JsonSyntaxException e){
                     e.printStackTrace();
                 } finally {
-                    if (name != null) {
-                        names.remove(name);
+                    if(identity){
+                    	first.close();
+                    	first = null;
+                    } else {
+                    	second.close();
+                    	second = null;
                     }
                 }
                 socket.close();
