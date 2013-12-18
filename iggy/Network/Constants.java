@@ -7,10 +7,10 @@ import java.awt.event.KeyEvent;
 
 public interface Constants {
 	// Delay before start of game
-	public static final int START_DELAY = 3000;
+	public static final int START_DELAY = 5000;
 	
 	// Use a port number bigger than 1024
-	public static final int PORT = 9999;
+	public static final int PORT = 3000;
 	
 	public static int WINDOW_WIDTH = 782;
 	public static int WINDOW_HEIGHT = 545;
@@ -18,7 +18,7 @@ public interface Constants {
 	public static int APPLICATION_WIDTH = 800;
 	public static int APPLICATION_HEIGHT = 600;
 	
-	public static final int FRAME_DELAY = 10;
+	public static final int FRAME_DELAY = 40;
 	public static final int POINT_DELAY = 300;
 	
 	// W, S for left paddle

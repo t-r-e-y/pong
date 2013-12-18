@@ -35,14 +35,27 @@ public class Client extends JFrame implements Constants {
 		// Write and read from the server through sockets
 		out = new PrintWriter(socket.getOutputStream(), true);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		
+
 		// Create a new instance of games
 		window = new Client();
 		
+		// Set the ID based on the welcome message
+		String welcome = in.readLine();
+		System.out.println("RECEIVE: " + welcome);
+		game.setID(Integer.parseInt(welcome.substring(1 + WELCOME_GREETING.length())));
+		
+		// Set the synchronized start time
+		String time = in.readLine();
+		System.out.println("RECEIVE: " + time);
+		game.setStartTime(Long.parseLong(time.substring(1 + WAIT_STRING.length())));
+		
+		out.println("START");
 		while (true) {
+			System.out.println("hi");
 			String line = in.readLine();
 			StringTokenizer s = new StringTokenizer(line);
 			System.out.println("RECEIVE: " + line);
+			
 			String token = "";
 			if (s.hasMoreTokens()) {
 				token = s.nextToken();
@@ -73,7 +86,6 @@ public class Client extends JFrame implements Constants {
 			}
 			if (token.equals(PADDLE_STRING)) {
 				game.setPaddle(Integer.parseInt(s.nextToken()));
-				System.out.println("Changed paddle.");
 			}
 			
 			String result = "";
@@ -85,7 +97,7 @@ public class Client extends JFrame implements Constants {
 			}
 			result += PADDLE_STRING + " " + game.getPaddle();
 			out.println(result);
-			System.out.println("SEND: " + result);
+			// System.out.println("SEND: " + result);
 		}
 	}
 }

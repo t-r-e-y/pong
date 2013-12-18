@@ -43,12 +43,10 @@ public class Player extends Thread implements Runnable, Constants {
 	
 	public void run() {
 		try {
-			out.println(WAIT_STRING + time);
+			out.println(WAIT_STRING + " " +  time);
 			while (true) {
 				String inputLine = in.readLine();
-				System.out.println("RECEIVE: " + inputLine);
 				out.println(inputLine);
-				System.out.println("SEND: " + inputLine);
 			}
 		} catch (IOException e) {
 			connected = false;

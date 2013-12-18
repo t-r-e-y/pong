@@ -34,11 +34,7 @@ public class Paddle extends Block {
 	public void setPos(int x, int y) {
 		if (controllable) super.setPos(x, y);
 	}
-	
-	@Override
-	public void setY(int y) {
-		if (controllable) super.setY(y);
-	}
+
 	
 	public void moveUp() {
 		if (controllable) setY(getY() - speed);

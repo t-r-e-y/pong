@@ -5,6 +5,7 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -23,7 +24,8 @@ public class Pong extends JPanel implements Runnable, Constants, MouseMotionList
 	private BufferedImage back;
 	private int leftScore = 0;
 	private int rightScore = 0;
-	int ID = 1;
+	private int ID = 1;
+	private long time;
 	private boolean bounce, point;
 
 	public Pong() {
@@ -66,17 +68,26 @@ public class Pong extends JPanel implements Runnable, Constants, MouseMotionList
 	// Accounts for latency by reflecting it over
 	public void bounce() {
 		if (ID == 1) {
-			ball.setX(2 * rightPaddle.getX() - ball.getX() - ball.getWidth());
+			ball.setX(2 * rightPaddle.getX() - (ball.getX() + ball.getWidth()) - ball.getWidth());
 		} else {
-			ball.setX(2 * (leftPaddle.getX() + leftPaddle.getWidth()) - ball.getX() - ball.getWidth());
+			ball.setX(2 * (leftPaddle.getX() + leftPaddle.getWidth()) - ball.getX());
 		}
 		ball.setXSpeed(- ball.getXSpeed());
 	}
 	
 	// When called, increments the other player's score
 	public void point() {
-		if (ID == 1) rightScore++;
-		if (ID == 2) leftScore++;
+		if (ID == 2) {
+			rightScore++;
+			ball.setPos(leftPaddle.getX() + leftPaddle.getWidth(), leftPaddle.getY() + leftPaddle.getHeight() / 2 - ball.getHeight() / 2);
+			ball.setXSpeed(- ball.getXSpeed());
+			
+		} else {
+			leftScore++;
+			ball.setPos(rightPaddle.getX() - rightPaddle.getWidth(), rightPaddle.getY() + rightPaddle.getHeight() / 2 - ball.getHeight() / 2);
+			ball.setXSpeed(- ball.getXSpeed());
+		}
+		
 	}
 	
 	// If has a bounce, set it back
@@ -117,12 +128,8 @@ public class Pong extends JPanel implements Runnable, Constants, MouseMotionList
 	
 	// Synchronize the start times
 	public void setStartTime(long time) throws InterruptedException {
-		new Thread(this);
-		Thread.currentThread();
-		
-		// Wait remaining time before starting the thread
-		Thread.sleep(time - Calendar.getInstance().getTimeInMillis());
-		Thread.currentThread().start();
+		this.time = time;
+		new Thread(this).start();
 	}
 	
 	@Override
@@ -256,14 +263,15 @@ public class Pong extends JPanel implements Runnable, Constants, MouseMotionList
 	}
 	
 	public void run() {
+		
 		try {
+			Thread.currentThread().sleep(time - Calendar.getInstance().getTimeInMillis());
 			while (true) {
-				Thread.currentThread();
-				Thread.sleep(FRAME_DELAY);
+				Thread.currentThread().sleep(FRAME_DELAY);
 				repaint();
 			}
 		} catch(Exception e) {
-			
+			System.out.println("error");
 		}
 	}
 
